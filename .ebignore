@@ -1,0 +1,6 @@
+node_modules
+.circleci
+.eslintrc.json
+*.md 
+.local
+.vscode

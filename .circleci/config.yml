@@ -1,0 +1,72 @@
+version: 2.1
+
+# See: https://circleci.com/docs/2.0/orb-intro/
+orbs:
+    eb: circleci/aws-elastic-beanstalk@2.0.1
+    node: circleci/node@4.9.0 #defaults to Node 13.11 as of 06DEC2021, but this is overriden with cimg/node
+    #Per CircleCI Docs "Recommendation: It is highly recommended to utilize an environment such as Docker with Node preinstalled." https://circleci.com/developer/orbs/orb/circleci/node#commands-install
+    #As a result, a cimg/node is used below with the built-in jobs and commands of the node orb.
+
+jobs:
+
+    build:
+        docker:
+            - image: cimg/node:16.17.0
+        steps:
+            - checkout
+            - run:
+                  name: generate env file
+                  #TODO check wordcount of .env.production
+                  command: | 
+                    sudo apt-get install gettext-base
+                    echo "$(envsubst < .env.production)" > .env.production 
+            - node/install-packages:
+                  include-branch-in-cache-key: false
+                  override-ci-command: npm install #do not want npm ci because the install requires writing to npm-shrinkwrap
+                  # Below will disable cache restores
+                  # with-cache: false
+            - run:
+                  command: |
+                      npm run build
+                      rm -rf node_modules
+
+    deploy:
+        docker:
+            - image: cimg/base:stable
+        steps:
+            - eb/setup
+            - run:
+                  command: |
+                      eb init ${eb_app_name} -r $AWS_DEFAULT_REGION -p node.js
+                      eb deploy ${eb_env_name} -l version-<<pipeline.number>>
+                  #Below commands are from the eb/deploy job and adapted to work in a custom job
+                  #          eb init <<parameters.application-name>> -r $AWS_DEFAULT_REGION -p <<parameters.platform-version>>
+                  #          eb deploy <<parameters.environment-name>> <<#parameters.label>>-l <<parameters.label>><</parameters.label>> <<#parameters.description>>-m <<parameters.description>><</parameters.description>>
+                  working_directory: /home/circleci/project
+workflows:
+    store-to-eb:
+        jobs:
+            - build:
+                  pre-steps:
+                      - attach_workspace:
+                            at: /home/circleci/project
+                  post-steps:
+                      - persist_to_workspace:
+                            root: /home/circleci/project
+                            paths:
+                                - ./
+                  context:
+                      - store-<< pipeline.git.branch >>
+                  filters:
+                      branches:
+                        only:
+                          - develop
+            - deploy:
+                  pre-steps:
+                      - attach_workspace:
+                            at: /home/circleci/project
+                  context:
+                      - aws-creds
+                      - store-<< pipeline.git.branch >>
+                  requires:
+                      - build

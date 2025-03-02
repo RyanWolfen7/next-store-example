@@ -1,0 +1,29 @@
+version: "3.4"
+
+services:
+
+  node: 
+    container_name: next-store-example-app
+    build: 
+      context: './'
+      dockerfile: './.local/app_server/Dockerfile'
+    #command: CUSTOM STARTUP COMMAND HERE
+    environment:
+      NODE_ENV: 'test'
+    volumes: 
+      - ./components:/node/components
+      - ./graphql:/node/graphql
+      - ./mocks:/node/mocks
+      - ./pages:/node/pages
+      - ./public:/node/public
+      - ./src:/node/src
+      - ./store:/node/store
+      - ./styles:/node/styles
+      - ./utils:/node/utils
+      - ./.env.test:/node/.env.test
+      - ./.eslintrc.json:/node/.eslintrc.json
+      - ./apollo-client.js:/node/apollo-client.js
+      - ./next.config.js:/node/next.config.js
+    ports: 
+      - 127.0.4.0:443:443
+      - 127.0.4.0:9229:9229

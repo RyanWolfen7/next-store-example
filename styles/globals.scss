@@ -1,0 +1,28 @@
+@import '_variables.scss';
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  color: $text_color;
+  background-color: white!important;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#nav_logo {
+  filter: invert(10%) sepia(70%) saturate(730%) hue-rotate(165deg) brightness(20%) contrast(96%);
+}
+
+a {
+  color: $main;
+}
