@@ -11,8 +11,8 @@ const app = next({ dev, hostname, port })
 const handle = app.getRequestHandler()
 
 const tls = {
-  key: fs.readFileSync(path.join(__dirname, 'certs/store.next-store-example.tech.key')),
-  cert: fs.readFileSync(path.join(__dirname, 'certs/store.next-store-example.tech.crt'))
+  key: fs.readFileSync(path.join(__dirname, 'certs/store.local.key')),
+  cert: fs.readFileSync(path.join(__dirname, 'certs/store.local.crt'))
 }
 
 app.prepare().then(() => {
